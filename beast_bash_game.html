@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beast Bash: Planet Punchers</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #e6e6e6;
+      font-family: monospace;
+    }
+    canvas {
+      display: block;
+      background: #fff;
+      border: 4px solid #000;
+    }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #fff;
+      padding: 10px;
+      border: 2px solid #000;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <label>Choose your Beast:</label>
+    <select id="beast-select">
+      <option value="gorilla">Giant Gorilla</option>
+      <option value="crocodile">Mega Crocodile</option>
+      <option value="chicken">Titanic Chicken</option>
+    </select>
+    <button onclick="startGame()">Start Rampage</button>
+  </div>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    let beast;
+
+    const beasts = {
+      gorilla: { speed: 2, health: 10, attack: 2, color: "brown" },
+      crocodile: { speed: 3, health: 8, attack: 3, color: "green" },
+      chicken: { speed: 4, health: 6, attack: 1, color: "yellow" },
+    };
+
+    let keys = {};
+    let humans = [];
+
+    function startGame() {
+      const selection = document.getElementById("beast-select").value;
+      beast = {
+        ...beasts[selection],
+        x: 100,
+        y: 300,
+        width: 50,
+        height: 50,
+        health: beasts[selection].health,
+      };
+      humans = Array.from({ length: 10 }, () => ({
+        x: Math.random() * 700 + 50,
+        y: Math.random() * 500 + 50,
+        alive: true,
+      }));
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener("keydown", (e) => (keys[e.key] = true));
+    window.addEventListener("keyup", (e) => (keys[e.key] = false));
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Move beast
+      if (keys["ArrowLeft"]) beast.x -= beast.speed;
+      if (keys["ArrowRight"]) beast.x += beast.speed;
+      if (keys["ArrowUp"]) beast.y -= beast.speed;
+      if (keys["ArrowDown"]) beast.y += beast.speed;
+
+      // Draw beast
+      ctx.fillStyle = beast.color;
+      ctx.fillRect(beast.x, beast.y, beast.width, beast.height);
+
+      // Draw and check collisions with humans
+      humans.forEach((human) => {
+        if (human.alive) {
+          ctx.fillStyle = "black";
+          ctx.fillRect(human.x, human.y, 10, 10);
+          if (
+            beast.x < human.x + 10 &&
+            beast.x + beast.width > human.x &&
+            beast.y < human.y + 10 &&
+            beast.y + beast.height > human.y
+          ) {
+            human.alive = false;
+          }
+        }
+      });
+
+      requestAnimationFrame(gameLoop);
+    }
+  </script>
+</body>
+</html>
